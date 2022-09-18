@@ -1,16 +1,18 @@
-# js基础
+# js基础 
+最重要的电子书：[《现代JavaScript教程》](https://zh.javascript.info/)
+
 
 ### 变量类型和计算
 
 * 题目：
   * typeof能判断哪些类型
-  * == 和 ===
+  * == 和 === 和 `Object.is()` 
   * 值类型和引用类型的区别
   * 手写深拷贝 
 
 * 值类型和引用类型
 
-  * 基本类型：Undefined、Null、Boolean、Number、String、Symbol
+  * 基本类型(也叫原始数据类型)：`string、number、bigint、boolean、undefined、symbol、null`
   * 引用类型：Object 类型、Array 类型、Date 类型、RegExp 类型、Function 类型等等
   * js将值类型（基本类型）的存于**栈**中，将引用类型存于**堆**中。只是将引用类型的内存地址存于栈中。
   * 把一个值类型（基本类型）赋值给另一个变量时，其实是分配了一块新的内存空间，因此改变str1的值对str2没有任何影响，因为它不同于*引用类型*(变量的交换其实是交换了指向同一个内容的地址)。 
@@ -20,7 +22,7 @@
 
   * 用来检测一个变量是不是**基本的数据类型**
   * 能识别识别所有的值类型
-  * **识别函数**
+  * **识别函数** `typeof function() {} // function`
   * 判断是否是引用类型（不可细分）
   * **typeof null 为 object**
 
@@ -57,6 +59,7 @@
    */
   
   function deepCopy(object) {
+      // 排除null 和 undefined 这些特殊情况
       if (!object || object === 'object') { return }
   
       let newObject = Array.isArray(object) ? [] : {}
@@ -538,32 +541,4 @@
         console.log(myJson);
       });
     ```
-
-### 浏览器储存
-
-- cookie
-  - 本身用于浏览器和server的通讯
-  - 被'借用'到本地存储
-  - 服务端也可以修改cookie
-  - 前端通过document.cookie = 'xxx' 修改cookie
-- localStorage
-
-  - 是HTML5提供两种在客户端存储资料的方法，已经解决了cookie存储量小，无法使用的大量资料本地存储的问题。
-- sessionStorage
-
-  - 从字面的意思就可以裁剪，sessionStorage将资料储存在session中，浏览器关闭也就没了；而localStorage则一直将数据存储在客户端本地；无论是sessionStorage，还是localStorage，可使用的API都相同。
-  - 都是使用键/值对的方式给值或取值
-  - 大小预设有5mb
-  - 每次要求不会带上
-- 为什么要使用这个技术栈，对比其他的技术，有什么优势，自己的取舍
-- 项目优化，白屏问题 ，用户体验问题，错误处理 ，服务端渲染，权限路由设计，骨架屏
-- 发现问题  调研问题  找到解决方案 融合自己的想法 落地
-
-  - new操作进行的步骤
-  - call & bind & apply
-  - caller / callee
-  - 柯里化(**尾递归优化**) & 函数式编程
-  - 类数组
-  - isNaN() 和 Number.isNaN()
-  - Obejct.is() 的不符直觉的处理（扩展：React的`ShallowEqual`底层对Object.is()进行了优化, 见[shallowEqual.js](https://github.com/facebook/react/blob/a9b035b0c2b8235405835beca0c4db2cc37f18d0/packages/shared/shallowEqual.js)）
 
