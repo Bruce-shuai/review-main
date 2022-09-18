@@ -1,95 +1,75 @@
-```
-const PENDING = 'PENDING';
-const FULFILLED = 'FULFILLED';
-const REJECTED = 'REJECTED';
+### 手写Promise
 
-class Promise {
+```js
+class MyPromise {
+  // 三种状态
+  static PENDING = '待定';
+  static FULFILLED = '成功';
+  static REJECTED = '失败';
+
   constructor(executor) {
-    // 默认状态为 PENDING
-    this.status = PENDING;
-    // 存放成功状态的值，默认为 undefined
-    this.value = undefined;
-    // 存放失败状态的值，默认为 undefined
-    this.reason = undefined;
-
-    // 调用此方法就是成功
-    let resolve = (value) => {
-      // 状态为 PENDING 时才可以更新状态，防止 executor 中调用了两次 resovle/reject 方法
-      if(this.status ===  PENDING) {
-        this.status = FULFILLED;
-        this.value = value;
-      }
-    } 
-
-    // 调用此方法就是失败
-    let reject = (reason) => {
-      // 状态为 PENDING 时才可以更新状态，防止 executor 中调用了两次 resovle/reject 方法
-      if(this.status ===  PENDING) {
-        this.status = REJECTED;
-        this.reason = reason;
-      }
-    }
+    this.status = MyPromise.PENDING;  // 默认为pending
+    this.result = null;
+    this.resolveCallbacks = [];
+    this.rejectCallbacks = [];
 
     try {
-      // 立即执行，将 resolve 和 reject 函数传给使用者  
-      executor(resolve,reject)
-    } catch (error) {
-      // 发生异常时执行失败逻辑
-      reject(error)
+      executor(this.resolve.bind(this), this.reject.bind(this));
+    } catch(e) {
+      this.reject(e);
     }
   }
 
-```
-
-
-
-### promise .all 
-
-```
-Promise.all = function(promises){
-    return new Promise((resolve, reject)=>{
-        let res = []
-        let len = promises.length
-        if(len === 0){
-            resolve(res)
-            return
-        }
-        let index = 0;
-        for(let i=0; i<promises.length; i++){
-            Promise.resolve(promises[i]).then((data)=>{
-                res[index++] = data;
-                if(index === len) return res;
-            }).catch((e)=>{
-                reject(e)
-            })
-        }
+  resolve(result) {
+    // resolve, reject 是要在当前作用域下最后执行的，所以用setTimeout来实现
+    setTimeout(() => {
+      if (this.status === MyPromise.PENDING) {
+        this.status = MyPromise.FULFILLED;
+        this.result = result;
+        // TODO: 这一步的重要性是啥？ 不是在then中的状态判断后就会执行onFULFILLED吗？
+        this.resolveCallbacks.forEach(cb => cb(result));
+      }
     })
+  }
+
+  reject(result) {
+    setTimeout(() => {
+      if (this.status === MyPromise.PENDING) {
+        this.status = MyPromise.REJECTED;
+        this.result = result;
+        this.rejectCallbacks.forEach(cb => cb(result))
+      }
+    })
+  }
+
+  // then 是一定会返回一个新的promise对象
+  then(onFULFILLED, onREJECTED) {
+    return new MyPromise((resolve, reject) => {
+      onFULFILLED = typeof onFULFILLED 'function' ? onFULFILLED : () => {}
+      onREJECTED = typeof onREJECTED === 'function' ? onREJECTED : () => {}
+      // 只能执行两个参数中的其中一个
+      if (this.status === MyPromise.PENDING) {
+        // 让then里的回调稍后执行，让resolve执行后再执行then里面的内容
+        // TODO: 有个疑问，为啥这里是一个队列？
+        this.resolveCallbacks.push(onFULFILLED)
+        this.rejectCallbacks.push(onREJECTED)
+      }
+      if (this.status === MyPromise.FULFILLED) {
+        // 设置异步执行
+        setTimeout(() => {
+          onFULFILLED(this.result)
+        })
+      } 
+      if (this.status === MyPromise.REJECTED) {
+        setTimeout(() => {
+          onREJECTED(this.result)
+        })
+      }
+    })
+  }
 }
 ```
 
+### Promise.all
 
-
-### promise.race
-
-```
-Promise.race = function(promises){
-    return new Promise((resolve, reject)=>{
-        let len = promises.length;
-        if(len ===0 ){
-            resolve(res)
-            return
-        }
-        for(let i=0; i<len; i++){
-            Promise.resolve(promises[i]).then((data)=>{
-                resolve(data)
-                return 
-            }).catch((e)=>{
-                reject(e)
-                return
-            }
-            )
-        }
-    })
-}
-```
-
+### Promise.race

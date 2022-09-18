@@ -1,35 +1,25 @@
+HTTP3
+相关文章：
+https://www.stackscale.com/blog/http3/
+https://thenewstack.io/http-3-is-now-a-standard-why-use-it-and-how-to-get-started/
 
+> 在2022年6月份 HTTP3已经成为IETF标准
 
-下一代HTTP底层协议，可能不再使用已经沿用多年的TCP协议，而有望改用以UDP协议发展出的QUIC技术，同时新一代HTTP将命名为HTTP/3。
+### HTTP3有什么变化(相比于HTTP2或之前的HTTP版本)
+#### HTTP2的缺陷
+* `HTTP2`是基于`TCP`协议实现的，而`TCP`的一个特性就是连接可靠，如果在传输数据的过程中，有一个数据包被丢失,那么整个`TCP`的连接就会处于一个停止等待状态，需要等待丢失的数据包重新发过来才能重新传输。(简称：TCP的队头阻塞)
 
-　　目前，人们使用的HTTP (1.0、1.1及2)都是以TCP (Transmission Control Protocol)协议为基础实作出来。TCP作为一种传输控制协议，优点是安全、流量稳定、讲求封包的传输顺序，但缺点是效率低、连接耗时。为了提升数据在IP网络上的传输，Google提出了实验性网络层协议，称为QUIC。
+* TCP的建立连接是需要握手过程的，同样会影响传输速度。
 
-　　QUIC并不使用TCP，而改用UDP (User Datagram Protocol)为底层，UDP虽然较不安全、可能有掉封包或封包后发先至的问题，但较简单、传输效率更高，能大幅减低延迟性。Google为QUIC提升安全性、并加入缓冲机制避免阻断服务攻击（DoS）。
+#### QUIC协议 + UDP
+上面提到了TCP的局限性。而由谷歌提出来的QUIC协议，就实现了 数据传输可靠、加密以及其他的TCP+TLS中的优势，并结合UDP解决TCP的缺陷。从而实现的HTTP3。 (简单而言即取TCP之长补UDP之短)
 
-　　虽然Google有意将QUIC提交到IETF，以便成为下一代网际网络规范，但IETF也提出了一个和Google QUIC分庭抗礼的QUIC。社区中称Google提出的QUIC为gQUIC，而IETF的为iQUIC。
+<img src="https://raw.githubusercontent.com/w-l-l/BrowserPrinciple/main/%E6%B5%8F%E8%A7%88%E5%99%A8%E4%B8%AD%E7%9A%84%E7%BD%91%E7%BB%9C/HTTP3%EF%BC%9A%E7%94%A9%E6%8E%89TCP%E3%80%81TCL%E5%8C%85%E8%A2%B1%EF%BC%8C%E6%9E%84%E5%BB%BA%E9%AB%98%E6%95%88%E7%BD%91%E7%BB%9C/img/http2-http3-agreement-stack.png" alt="http2-pk-http3" width="300px"/>
 
-QUIC 全称 quick udp internet connection，“快速UDP互联网连接”。QUIC 位于应用层(比如 Http)和网络层(UDP)之间，是在UDP上实现的一个多路复用的协议。
+##### 细说 QUIC协议
 
-
-
-Quic的优势和应用场景
-1，为什么需要Quic：
-近三十年来，tcp协议发展得非常缓慢
-很多网络中间层，比如防火墙、网关等，都强依赖于tcp指定的各类规则，所以tcp的修改很容易由于这些中间环节的存在而受到干扰。
-tcp是由操作系统在内核层面实现的， 导致tcp的迭代受限于操作系统的升级。
-2，Quic 相比现在广泛应用的 tls+http+tcp 协议有如下优势 ：
-减少了 TCP 三次握手及 TLS 握手时间。
-改进的拥塞控制。
-避免队头阻塞。
-3，应用场景
-弱网环境的时候能够提升 20% 以上的访问速度。
-频繁切换网络的情况下，不会断线，不需要重连，用户无任何感知。
-
-
-**QUIC的优点**
-
-**1、精细流量控制。**主要依赖于三种关键幀能达到流量控制，一是 window_update 帧，告诉对端自己“可以且最多可以”接收的字节数绝对偏移量；二是blocked 帧，告诉对端数据发送，由于流量控制被阻塞，暂时无法发送；三是stop_waiting 帧，用于通知对端，它不应该继续等待包小于特定值的包。对于直播而言，在直播发起时，在转码跟不上的时候，告诉服务端停止发送直播流或者做出一些应急处理，推动定制的幀去做，保证服务可用性。
-
-**2、无队头阻塞的多路复用。**QUIC 的多路复用，在一条 QUIC 连接上可以发送多个请求 (stream)，一个连接上的多个请求(stream)之间是没有依赖的。比如说这个packet丢失，不会影响其他的stream。这个特性对于直播来说是，在弱网下的推流可以保证流畅。
-
-**7、改进的拥塞控制。**这是QUIC最重要的一个特性，TCP的拥塞控制包含了四个算法：慢启动，拥塞避免，快速重传，快速恢复。QUIC 协议当前默认使用TCP协议的Cubic拥塞控制算法，同时也支持 CubicBytes, Reno, RenoBytes, BBR, PCC 等拥塞控制算法。同时QUIC拥有完善的数据包同步机制，在应用层做了很多网络拥塞控制层面的优化，能有效降低数据丢包率，有助降低复杂网络下的直播卡顿率，提升传输效率，使得推流更流畅。
+QUIC协议：
+* 实现了类似TCP的流量控制、数据可靠性的功能。具备数据包重传、拥塞控制以及其他TCP中存在的特性
+* 集成了TLS的加密功能，并且减少了握手所花费的RTT的个数
+* 实现了HTTP/2的多路复用，并且实现了数据流的单独船速，解决了TCP中队头阻塞问题
+* 快速的握手功能，因为QUIC是基于UDP的，所以只需要0-1次RTT就可建立连接。

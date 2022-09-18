@@ -98,7 +98,7 @@
 
 ### 减少回流的几个方法
 
-- **合并多次**对DOM和`css`样式的修改。
+- **合并多次**对`DOM`和`CSS`样式的修改。
 
 - `display:none`：他所占据的空间会消失。`visibility:hidden`：元素只是不可见，但是仍然占空间。如果要改变一个元素可以用`visibility:hidden`，来避免回流
 
@@ -126,9 +126,7 @@
 
 - CSS3硬件加速： **使用css3硬件加速，可以让transform：translate3d、opacity、filters这些动画不会引起回流重绘** 
 
-- `display:none`：他所占据的空间会消失。`visibility:hidden`：元素只是不可见，但是仍然占空间。如果要改变一个元素可以用`visibility:hidden`，来避免回流
-
-- 避免 table 布局和使用 `css` 的`javascript`表达式
+- 避免 table 布局和使用`javascript`来直接控制CSS样式
 
 
 
