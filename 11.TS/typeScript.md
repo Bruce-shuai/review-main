@@ -1,4 +1,5 @@
-https://www.huaweicloud.com/articles/f03e973395df0a4650e1ba6ce03b3909.html
+## 什么是TypeScript
+所谓TS，其实就是赋予JS强类型的语言。遵从JS的最新ES规范
 
 
 
