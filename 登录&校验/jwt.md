@@ -89,3 +89,4 @@ eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4
 
 当客户端收到服务器返回的`JWT`，可以存储在`Cookie`里面，也可以存储在`localStorage`里面。但是如果放在`cookie`里面，后续发送则无法支持跨域，所以最好的做法是放在`HTTP`请求头信息的`Authorization`
 
+
